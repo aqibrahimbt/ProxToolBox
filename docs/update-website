@@ -1,0 +1,9 @@
+#!/bin/bash
+
+cd "$(dirname $0)"
+if ! make html; then
+    echo "A sphinx error occured. Not uploading website."
+    exit 1
+fi
+echo "Uploading website."
+rsync -av _build/html/ rluke1@web.num.math.uni-goettingen.de:public_html/proxtoolbox

@@ -1,0 +1,46 @@
+List of files in ProxMatlab that have changed since Ziehe&Nahme version of ProxPython:
+
+
+README
+
+Algorithms:
+	ADMMPlus.m      
+	DRlPHeBIE.m      
+	PALM.m       
+	RCAAR.m
+	ADMMPlus.m.old  
+	HPR.m            
+	RAAR.m       
+	AP.m            
+	Nesterov_PALM.m  
+	RAAR_PALM.m  
+	Wirttinger_grad.m
+
+ProxOperators(top directory):
+       	P_RN.m
+	P_amp.m                         
+	P_Diag.m                        
+	P_parallel_hyperplane.m         
+	P_S.m
+	P_SP.m
+	P_parallel_scaled_hyperplane.m  
+	P_S_real.m
+
+Utilities:
+	FFT.m
+	IFFT.m
+	RANDsrc.m
+
+drivers:
+	main_ProxToolbox.m
+	Custom.m
+	Ptychography/Ptychography_data:
+		Ptychography_data_processor.m
+	Sparsity
+	Phase
+	Misc
+	CT
+	Sudoku/Custom.m
+	Sensor_location
+	
+
