@@ -3,17 +3,6 @@
   <component name="ChangeListManager">
     <list default="true" id="4056d275-09ad-4a7b-8344-1645a5fa3d47" name="Default" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" afterPath="$PROJECT_DIR$/.idea/workspace.xml" />
-      <change beforePath="$PROJECT_DIR$/test/images/001-strategy-5.png" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/test/images/002-strategy-4.png" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/test/images/006-notes.png" afterPath="$PROJECT_DIR$/test/images/tutorials.png" />
-      <change beforePath="$PROJECT_DIR$/test/images/cancel.png" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/test/images/folder.png" afterPath="$PROJECT_DIR$/test/images/open.png" />
-      <change beforePath="$PROJECT_DIR$/test/images/logout.png" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/test/images/paper.png" afterPath="$PROJECT_DIR$/test/images/new.png" />
-      <change beforePath="$PROJECT_DIR$/test/images/pdf.png" afterPath="" />
-      <change beforePath="$PROJECT_DIR$/test/images/tutorial.png" afterPath="$PROJECT_DIR$/test/images/example.png" />
-      <change beforePath="$PROJECT_DIR$/test/images/website.png" afterPath="$PROJECT_DIR$/test/images/documentation.png" />
-      <change beforePath="$PROJECT_DIR$/test/test.py" afterPath="$PROJECT_DIR$/test/test.py" />
     </list>
     <ignored path="$PROJECT_DIR$/out/" />
     <option name="EXCLUDED_CONVERTED_TO_IGNORED" value="true" />
@@ -31,8 +20,8 @@
       <file leaf-file-name="test.py" pinned="false" current-in-tab="true">
         <entry file="file://$PROJECT_DIR$/test/test.py">
           <provider selected="true" editor-type-id="text-editor">
-            <state relative-caret-position="33">
-              <caret line="258" column="20" lean-forward="true" selection-start-line="258" selection-start-column="20" selection-end-line="258" selection-end-column="20" />
+            <state relative-caret-position="264">
+              <caret line="269" column="47" lean-forward="true" selection-start-line="269" selection-start-column="47" selection-end-line="269" selection-end-column="47" />
               <folding>
                 <element signature="e#0#10#0" expanded="true" />
               </folding>
@@ -345,12 +334,12 @@
       <option name="presentableId" value="Default" />
       <updated>1533548135065</updated>
       <workItem from="1533548138211" duration="26897000" />
-      <workItem from="1533686077788" duration="12997000" />
+      <workItem from="1533686077788" duration="13826000" />
     </task>
     <servers />
   </component>
   <component name="TimeTrackingManager">
-    <option name="totallyTimeSpent" value="39894000" />
+    <option name="totallyTimeSpent" value="40723000" />
   </component>
   <component name="ToolWindowManager">
     <frame x="0" y="23" width="1280" height="727" extended-state="0" />
@@ -762,8 +751,8 @@
     </entry>
     <entry file="file://$PROJECT_DIR$/test/test.py">
       <provider selected="true" editor-type-id="text-editor">
-        <state relative-caret-position="33">
-          <caret line="258" column="20" lean-forward="true" selection-start-line="258" selection-start-column="20" selection-end-line="258" selection-end-column="20" />
+        <state relative-caret-position="264">
+          <caret line="269" column="47" lean-forward="true" selection-start-line="269" selection-start-column="47" selection-end-line="269" selection-end-column="47" />
           <folding>
             <element signature="e#0#10#0" expanded="true" />
           </folding>
