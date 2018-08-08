@@ -1,9 +1,8 @@
 import sys
 
-from PyQt5.QtCore import QRect
-from PyQt5.QtWidgets import (QWidget, QToolTip, QPushButton, QApplication, QDesktopWidget, QMessageBox, QAction, qApp,
-                             QMainWindow, QMenu, QAbstractButton, QLabel, QComboBox)
-from PyQt5.QtGui import (QFont, QIcon, QPainter, QPixmap)
+from PyQt5.QtWidgets import *
+from PyQt5.QtGui import *
+from PyQt5.QtCore import *
 
 
 class MainFrame(QMainWindow):
@@ -21,52 +20,34 @@ class MainFrame(QMainWindow):
         menubar = self.menuBar()
 
         # Main Options
-        fileMenu = menubar.addMenu('&Start')
+        fileMenu = menubar.addMenu('&File')
         helpMenu = menubar.addMenu('&Help')
 
         # Sub Menu for File Menu
-        problem = QMenu('Problem', self)
-        ct = QAction('CT', self)
-        phase = QAction('Phase',  self)
-        problem.addAction(ct)
-        problem.addAction(phase)
-        fileMenu.addMenu(problem)
-
-        algorithm = QMenu('Algorithm', self)
-        ap_default = QAction('AP (Default)', self)
-        ap_expert = QAction('AP (Expert)', self)
-        graal = QAction('GRAAL', self)
-        haar = QAction('HAAR', self)
-        hpr = QAction('HPR', self)
-        palm = QAction('PALM', self)
-        qnap = QAction('QNAP', self)
-        raar = QAction('RAAR (Default)', self)
-        raar_expert = QAction('RAAR (Expert)', self)
-        algorithm.addAction(ap_default)
-        algorithm.addAction(ap_expert)
-        algorithm.addAction(graal)
-        algorithm.addAction(haar)
-        algorithm.addAction(hpr)
-        algorithm.addAction(palm)
-        algorithm.addAction(qnap)
-        algorithm.addAction(raar)
-        algorithm.addAction(raar_expert)
-        fileMenu.addMenu(algorithm)
-
+        new = QAction('New', self)
+        open = QAction('Open', self)
         export = QAction('Export', self)
+        fileMenu.addAction(new)
+        fileMenu.addAction(open)
         fileMenu.addAction(export)
 
         # Sub Menu for Help Menu
         gettingStarted = QAction('Getting Started', self)
+        examples = QAction('Examples', self)
+        tutorials = QAction('Tutorials', self)
         apiReference = QAction('API Reference', self)
         whatisnew = QAction('What is new in Prox Toolbox', self)
         support = QAction('Support Center', self)
         feedback = QAction('Submit feedback', self)
+        about = QAction('About', self)
         helpMenu.addAction(gettingStarted)
+        helpMenu.addAction(examples)
+        helpMenu.addAction(tutorials)
         helpMenu.addAction(apiReference)
         helpMenu.addAction(whatisnew)
         helpMenu.addAction(support)
         helpMenu.addAction(feedback)
+        helpMenu.addAction(about)
 
         # Exit application from Menu or by pressing Ctrl + Q
         exitAct = QAction(QIcon('cancel.png'), '&Exit', self)
@@ -74,45 +55,33 @@ class MainFrame(QMainWindow):
         exitAct.setStatusTip('Exit application')
         exitAct.triggered.connect(qApp.quit)
 
-        #self.toolbar = self.addToolBar('Exit')
-        #self.toolbar.addAction(exitAct)
-
-        # # Buttons
-        # btn = QPushButton('Algorithm', self)
-        # btn.setToolTip('Click to select <b>Algorithm</b>')
-        # btn.resize(btn.sizeHint())
-        # btn.move(50, 50)
-        #
-        # qbtn = QPushButton('Quit', self)
-        # qbtn.clicked.connect(self.clickMethod)
-        # qbtn.resize(qbtn.sizeHint())
-        # qbtn.move(200, 50)
-
-        newbtn = PicButton(QPixmap('images/paper.png'), self)
+        newbtn = PicButton(QPixmap('images/new.png'), self)
         newbtn.move(100, 100)
         newbtn.resize(60, 60)
         newbtnlbl = QLabel('New', self)
         newbtnlbl.move(115, 155)
 
-        openbtn = PicButton(QPixmap('images/folder.png'), self)
+        newbtn.clicked.connect(self.on_pushButton_clicked)
+
+        openbtn = PicButton(QPixmap('images/open.png'), self)
         openbtn.move(250, 100)
         openbtn.resize(60, 60)
         openlbl = QLabel('Open', self)
         openlbl.move(265, 155)
 
-        examplebtn = PicButton(QPixmap('images/tutorial.png'), self)
+        examplebtn = PicButton(QPixmap('images/example.png'), self)
         examplebtn.move(400, 100)
         examplebtn.resize(60, 60)
         examplebtnlbl = QLabel('Example', self)
         examplebtnlbl.move(405, 155)
 
-        tutorialbtn = PicButton(QPixmap('images/006-notes.png'), self)
+        tutorialbtn = PicButton(QPixmap('images/tutorials.png'), self)
         tutorialbtn.move(100, 250)
         tutorialbtn.resize(60, 60)
         tutorialbtnlbl = QLabel('Tutorials', self)
         tutorialbtnlbl.move(105, 305)
 
-        docbtn = PicButton(QPixmap('images/website.png'), self)
+        docbtn = PicButton(QPixmap('images/documentation.png'), self)
         docbtn.move(250, 250)
         docbtn.resize(60, 60)
         docbtnlbl = QLabel('Documentation', self)
@@ -140,13 +109,19 @@ class MainFrame(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
-    # Displays the message box. Can be used for something else later
+    # Displays the message box.
     def clickMethod(self):
-        quitResponse = QMessageBox.question(self, 'Achtung!', "Are you sure you want to Quit?", QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
+        quitResponse = QMessageBox.question(
+            self, 'Achtung!', "Are you sure you want to Quit?",
+                                    QMessageBox.Yes | QMessageBox.No, QMessageBox.No)
         if quitResponse == QMessageBox.Yes:
             sys.exit()
         if quitResponse == QMessageBox.No:
             print('No clicked.')
+
+    def on_pushButton_clicked(self):
+        self.w = ComputationFrame()
+        self.w.show()
 
 
 class PicButton(QAbstractButton):
@@ -162,27 +137,92 @@ class PicButton(QAbstractButton):
         return self.pixmap.size()
 
 
-class ComputationFrame(QMainWindow):
+class ComputationFrame(QWidget):
 
     def __init__(self):
         super().__init__()
 
+        self.items = {
+            'Phase': ['AP', 'RAAR', 'RAAR_expert'],
+            'ART': ['AP', 'RAAR', 'HAAR', 'QNAP', 'Cimmino']
+        }
         self.initUI()
 
     def initUI(self):
 
-        centralWidget = QWidget(self)
-        self.setCentralWidget(centralWidget)
+        grid = QGridLayout()
+        grid.setSpacing(5)
 
-        # Create combobox and add items.
-        self.comboBox = QComboBox(centralWidget)
-        self.comboBox.setGeometry(QRect(40, 40, 491, 31))
-        self.comboBox.setObjectName(("comboBox"))
-        self.comboBox.addItem("PyQt")
-        self.comboBox.addItem("Qt")
-        self.comboBox.addItem("Python")
-        self.comboBox.addItem("Example")
+        # Create ComboBoxes
+        self.comboBox = QComboBox(self)
+        self.comboBox.addItem("Phase")
+        self.comboBox.addItem("ART")
+        self.comboBoxlbl = QLabel('MODULE')
+        self.comboBox.activated[str].connect(self.onActivated)
+        grid.addWidget(self.comboBoxlbl, 1, 0)
+        grid.addWidget(self.comboBox, 1, 1)
 
+        self.comboBox1 = QComboBox(self)
+        self.comboBox1lbl = QLabel('ALGORITHM')
+        grid.addWidget(self.comboBox1lbl, 2, 0)
+        grid.addWidget(self.comboBox1, 2, 1, 1, 1)
+
+        self.file = QLabel('FILE')
+        self.filebtn = QPushButton("UPLOAD FILE")
+        self.filebtn.clicked.connect(self.openFileNameDialog)
+        grid.addWidget(self.file, 3, 0)
+        grid.addWidget(self.filebtn, 3, 1)
+
+        self.constraint = QLabel('CONSTRAINT')
+        self.constraintEdit = QComboBox(self)
+        self.constraintEdit.addItem("Convex")
+        self.constraintEdit.addItem("support only")
+        self.constraintEdit.addItem("real and support")
+        self.constraintEdit.addItem("nonnegative and support")
+        self.constraintEdit.addItem("amplitude only")
+        self.constraintEdit.addItem("sparse real")
+        self.constraintEdit.addItem("sparse complex")
+        grid.addWidget(self.constraint, 4, 0)
+        grid.addWidget(self.constraintEdit, 4, 1)
+
+        self.beta_0 = QLabel('BETA_0')
+        self.beta_0Edit = QLineEdit()
+        self.beta_0Edit.setPlaceholderText(' starting relaxation parameter')
+        grid.addWidget(self.beta_0, 5, 0)
+        grid.addWidget(self.beta_0Edit, 5, 1)
+
+        self.beta_max = QLabel('BETA_MAX')
+        self.beta_maxEdit = QLineEdit()
+        self.beta_maxEdit.setPlaceholderText(' maximum relaxation parameter')
+        grid.addWidget(self.beta_max, 6, 0)
+        grid.addWidget(self.beta_maxEdit, 6, 1)
+
+        self.beta_switch = QLabel('BETA_SWITCH')
+        self.beta_switchEdit = QLineEdit()
+        self.beta_switchEdit.setPlaceholderText(' iteration at which beta moves from beta_0 -> beta_max')
+        grid.addWidget(self.beta_switch, 7, 0)
+        grid.addWidget(self.beta_switchEdit, 7, 1)
+
+        self.max_iter = QLabel('MAX ITER.')
+        self.max_iterEdit = QLineEdit()
+        self.max_iterEdit.setPlaceholderText(' maximum number of iterations')
+        grid.addWidget(self.max_iter, 8, 0)
+        grid.addWidget(self.max_iterEdit, 8, 1)
+
+        self.tol = QLabel('TOLERANCE')
+        self.tolEdit = QLineEdit()
+        self.tolEdit.setPlaceholderText(' maximum tolerance')
+        grid.addWidget(self.tol, 9, 0)
+        grid.addWidget(self.tolEdit, 9, 1)
+
+        # Buttons
+        self.submitbtn = QPushButton('SUBMIT')
+        self.submitbtn.resize(self.submitbtn.sizeHint())
+        self.submitbtn.setStyleSheet("background-color: #17a2b8")
+        grid.addWidget(self.submitbtn, 10, 1)
+        self.submitbtn.clicked.connect(self.on_click)
+
+        self.setLayout(grid)
         self.setAutoFillBackground(True)
         self.center()
         self.setWindowTitle('Prox ToolBox')
@@ -196,9 +236,44 @@ class ComputationFrame(QMainWindow):
         qr.moveCenter(cp)
         self.move(qr.topLeft())
 
+    def onActivated(self, text):
+        print(self.items[text])
+        self.comboBox1.clear()
+        self.comboBox1.addItems(self.items[text])
+
+    def openFileNameDialog(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getOpenFileName(
+            self,"QFileDialog.getOpenFileName()",
+            "", "All Files (*);;Python Files (*.py)", options=options)
+        if fileName:
+            print(fileName)
+
+    def saveFileDialog(self):
+        options = QFileDialog.Options()
+        options |= QFileDialog.DontUseNativeDialog
+        fileName, _ = QFileDialog.getSaveFileName(
+            self, "QFileDialog.getSaveFileName()"
+            , "", "All Files (*);;Text Files (*.txt)", options=options)
+        if fileName:
+            print(fileName)
+
+    @pyqtSlot()
+    def on_click(self):
+        comboBox = self.comboBox.currentText()
+        comboBox1 = self.comboBox1.currentText()
+        constraintEdit = self.constraintEdit.currentText()
+        beta_0Edit = self.beta_0Edit.text()
+        beta_maxEdit = self.beta_maxEdit.text()
+        beta_switchEdit = self.beta_switchEdit.text()
+        max_iterEdit = self.max_iterEdit.text()
+        tolEdit = self.tolEdit.text()
+
+        print(comboBox + ' ' + comboBox1 + ' ' + constraintEdit + ' ' + beta_0Edit + ' ' + beta_maxEdit + ' ' + beta_switchEdit + ' ' + max_iterEdit + ' ' + tolEdit)
+
 
 if __name__ == '__main__':
-
     app = QApplication(sys.argv)
-    ex = ComputationFrame()
+    ex = MainFrame()
     sys.exit(app.exec_())
