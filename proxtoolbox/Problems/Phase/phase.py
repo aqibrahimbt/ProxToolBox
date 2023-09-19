@@ -36,21 +36,19 @@ class Phase(Problem):
         data_processor(self.config)
 
         # reshape and rename the data
-        if('data_sq' in self.config):
-            pass    # already put data into required format, skip
-        else:
+        if 'data_sq' not in self.config:
             self.config['data_sq'] = self.config['data']
             self.config['data'] = self.config['rt_data']
             if('norm_data' in self.config):
                 self.config['norm_data_sq']= self.config['norm_data']
             self.config['norm_data']=self.config['norm_rt_data']
-            
+
             tmp = self.config['data'].shape
             if(tmp[0]==1 or tmp[1]==1):
                     self.config['data_sq'] = self.config['data_sq'].reshape((self.config['Nx'],self.config['Ny']))
                     #the prox algorithms work with the square root of the measurement:
                     self.config['data'] = self.config['data'].reshape((self.config['Nx'],self.config['Ny']))
-            
+
             if 'Nz' not in self.config:
                 self.config['Nz'] = 1
 
@@ -88,34 +86,28 @@ class Phase(Problem):
             proxoperators[0] ='P_liftM'
             proxoperators[2] ='Approx_PM_Poisson' # Patrick: This is just to monitor the change of phases!  
 
-        if self.config['experiment'] == 'single diffraction' or self.config['experiment'] == 'CDI':
+        if self.config['experiment'] in ['single diffraction', 'CDI']:
             if self.config['distance'] == 'far field':
                 if self.config['constraint'] == 'phaselift':
                     proxoperators[1] = 'P_Rank1'
                 elif self.config['constraint'] == 'phaselift2':
                     proxoperators[1] = 'P_rank1_SR'
                 else:
-                    if self.config['noise'] == 'Poisson':
-                        proxoperators[1] ='Approx_PM_Poisson'
-                    else:
-                        proxoperators[1] ='Approx_PM_Gaussian'
-            else:
-                if self.config['noise'] == 'Poisson':
-                    proxoperators[1]='Approx_P_FreFra_Poisson'
-        # possibly not necessary, but we set the prox operators here for specific
-        # named data sets
-        elif (self.config['experiment'] == 'Krueger') or (self.config['experiment'] == 'Near_field_cell_syn'):
-             proxoperators[0]='P_Amod'
-             proxoperators[1]='Approx_P_FreFra_Poisson'
-        # The following selects the prox mappings for diversity diffraction not
-        # performed in the product space. So far only used for RCAAR.
+                    proxoperators[1] = (
+                        'Approx_PM_Poisson'
+                        if self.config['noise'] == 'Poisson'
+                        else 'Approx_PM_Gaussian'
+                    )
+            elif self.config['noise'] == 'Poisson':
+                proxoperators[1]='Approx_P_FreFra_Poisson'
+        elif self.config['experiment'] in ['Krueger', 'Near_field_cell_syn']:
+            proxoperators[0]='P_Amod'
+            proxoperators[1]='Approx_P_FreFra_Poisson'
         elif self.config['experiment'] in ('dict', 'dictyM103_stx6_600frames','xenopus','living_worm'):
             proxoperators[0]='P_Amod' # Not sure this is the appropriate prox operator for these
                                    # experiments...
             proxoperators[1]='Approx_P_FreFra_Poisson'
 
-        # The following selects the projectors for diversity diffraction not
-        # performed in the product space. So far only used for RCAAR.
         elif self.config['experiment'] == 'diversity diffraction' and formulation == 'sequential':
             proxoperators[1] = 'Approx_P_RCAAR_JWST_Poisson'
             proxoperators[0] = proxoperators[1]
@@ -134,12 +126,9 @@ class Phase(Problem):
         elif self.config['constraint'] == 'phaselift':
             proxoperators[1] ='P_PL_lowrank'
 
-        self.config['proxoperators'] = []
-
-        for prox in proxoperators:
-            if prox != '':
-                self.config['proxoperators'].append(getattr(ProxOperators, prox))
-
+        self.config['proxoperators'] = [
+            getattr(ProxOperators, prox) for prox in proxoperators if prox != ''
+        ]
         # input.Proj1_input.F=F;  % is it any more expensive to pass everything
         # into the projectors rather than just a selection of data and
         # parameters?  If not, and we pass everything anyway, there is no need
@@ -190,7 +179,7 @@ class Phase(Problem):
             for j in range(self.config['product_space_dimension']):
                 # compute (||P_Sx-P_Mx||/norm_data)^2:
                 tmp_gap = tmp_gap+(norm(u_1[:,:,j]-u_2[:,:,j])/self.config['norm_rt_data'])**2
-        
+
         gap_0=sqrt(tmp_gap)
 
         # sets the set fattening to be a percentage of the
@@ -290,8 +279,11 @@ class Phase(Problem):
                     return
             elif self.config['algorithm'] == 'AP' and self.config['constraint'] == 'support only':
                         f = h5py.File('Phase_test_data/tasse_supp_u1_ap_' + str(self.config['MAXIT']) + '.mat')
-            elif ( self.config['algorithm'] == 'AP' or self.config['algorithm'] == 'AP_expert') and self.config['constraint'] == 'nonnegative and support':
-                        f = h5py.File('Phase_test_data/tasse_u1_ap_' + str(self.config['MAXIT']) + '.mat')
+            elif (
+                self.config['algorithm'] in ['AP', 'AP_expert']
+                and self.config['constraint'] == 'nonnegative and support'
+            ):
+                f = h5py.File('Phase_test_data/tasse_u1_ap_' + str(self.config['MAXIT']) + '.mat')
 
             u1 = f['u1'].value.view(np.float64)
 

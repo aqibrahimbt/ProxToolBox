@@ -115,7 +115,8 @@ class P_rodenburg(ProxOperator):
         """
         Initialization
         """
-        self.Nx = config['Nx']; self.Ny = config['Ny'];
+        self.Nx = config['Nx']
+        self.Ny = config['Ny'];
         self.N_pie = config['N_pie'];
         self.positions = config['positions'];
         self.switch_probemask = config['switch_probemask'];
@@ -127,7 +128,7 @@ class P_rodenburg(ProxOperator):
         self.trans_max_true = config['trans_max_true'];
         self.trans_min_true = config['trans_min_true'];
         self.fmask = config['fmask'];
-        if not self.fmask is None:
+        if self.fmask is not None:
             self.fmask = self.fmask.reshape((self.fmask.shape[0],
                                              self.fmask.shape[1],
                                              self.fmask.shape[2]*
@@ -151,7 +152,8 @@ class P_rodenburg(ProxOperator):
         """
         fnorm = self.fnorm;
         positions = self.positions;
-        Nx = self.Nx; Ny = self.Ny;
+        Nx = self.Nx
+        Ny = self.Ny;
         switch_probemask = self.switch_probemask;
         probemask = self.probemask;
         amp_exp_norm = self.amp_exp_norm;
@@ -161,68 +163,68 @@ class P_rodenburg(ProxOperator):
         trans_max_true = self.trans_max_true;
         trans_min_true = self.trans_min_true;
         fmask = self.fmask;
-        
+
         this_object = u.obj.copy();
         this_probe = u.probe.copy();
         this_phi = numpy.zeros_like(u.phi);
-        
+
         rangeNx = numpy.arange(Nx,dtype=numpy.int);
         rangeNy = numpy.arange(Ny,dtype=numpy.int);
-        
+
         for pos in numpy.random.permutation(self.N_pie):
             indy = rangeNy + positions[pos,0];
             indx = rangeNx + positions[pos,1];
-            
+
             if switch_probemask == True:
                 probe_norm = scipy.linalg.norm(this_probe,'fro') / \
-                                sqrt(numpy.size(this_probe));
+                                    sqrt(numpy.size(this_probe));
                 this_probe *= probemask;
                 this_probe *= probe_norm/(scipy.linalg.norm(this_probe,'fro') / \
-                                sqrt(numpy.size(this_probe)));
-            
+                                    sqrt(numpy.size(this_probe)));
+
             phi = this_probe * this_object[indy,:][:,indx];
             old_phi_hat = scipy.fftpack.fft2(phi) / fnorm;
             phi_hat = magproj(old_phi_hat,amp_exp_norm[:,:,pos]);
-            if not fmask is None:
+            if fmask is not None:
                 phi_hat = phi_hat * fmask[:,:,pos] + old_phi_hat * \
-                            (fmask[:,:,pos] == 0).astype(fmask.dtype);
+                                (fmask[:,:,pos] == 0).astype(fmask.dtype);
             phi_prime = scipy.fftpack.ifft2(phi_hat) * fnorm;
-            
-            for k in range(inner_it):
+
+            for _ in range(inner_it):
                 this_object_old = this_object.copy();
                 this_probe_old = this_probe.copy();
                 cthis_probe_old = numpy.conj(this_probe_old);
                 cthis_object_old = numpy.conj(this_object_old);
                 i_probe = numpy.amax(cthis_probe_old*this_probe_old) + 1e-8;
                 i_object = numpy.amax(this_object_old[indy,:][:,indx] * \
-                            cthis_object_old[indy,:][:,indx]) + 1e-8;
+                                cthis_object_old[indy,:][:,indx]) + 1e-8;
                 d_phi = phi_prime - phi;
-                
+
                 n_probe = (cthis_object_old[indy,:][:,indx]/i_object) * d_phi;
                 n_object = (cthis_probe_old/i_probe) * d_phi;
-                
+
                 this_probe = this_probe_old + n_probe;
                 for y in range(Ny):
                     this_object[indy[y],indx] = \
-                                this_object_old[indy[y],indx] + n_object[y,:];
-                
+                                    this_object_old[indy[y],indx] + n_object[y,:];
+
                 phi = this_probe * this_object[indy,:][:,indx];
                 phi_hat = scipy.fftpack.fft2(phi) / fnorm;
                 phi_hat = magproj(phi_hat,amp_exp_norm[:,:,pos]);
                 phi_prime = scipy.fftpack.ifft2(phi_hat) * fnorm;
-                
+
             if switch_object_support_constraint == True:
                 this_object *= object_support;
-            
+
             abs_object = numpy.abs(this_object);
             high = (abs_object > trans_max_true).astype(this_phi.dtype);
             low = (abs_object < trans_min_true).astype(this_phi.dtype);
             this_object = ((1-low)*(1-high)*this_object) + \
-                ((low*trans_min_true)+(high*trans_max_true)) * \
-                this_object / (abs_object+1e-30);
-            
+                    ((low*trans_min_true)+(high*trans_max_true)) * \
+                    this_object / (abs_object+1e-30);
+
             this_phi[:,:,pos] = this_probe * this_object[indy,:][:,indx];
-        
+
         return Pty(this_phi,this_object,this_probe);
 
 
@@ -240,7 +242,8 @@ class P_rodenburg_probe_fixed(P_rodenburg):
         """
         fnorm = self.fnorm;
         positions = self.positions;
-        Nx = self.Nx; Ny = self.Ny;
+        Nx = self.Nx
+        Ny = self.Ny;
         switch_probemask = self.switch_probemask;
         probemask = self.probemask;
         amp_exp_norm = self.amp_exp_norm;
@@ -250,64 +253,64 @@ class P_rodenburg_probe_fixed(P_rodenburg):
         trans_max_true = self.trans_max_true;
         trans_min_true = self.trans_min_true;
         fmask = self.fmask;
-        
+
         this_object = u.obj.copy();
         this_probe = u.probe.copy();
         this_phi = numpy.zeros_like(u.phi);
-        
+
         rangeNx = numpy.arange(Nx,dtype=numpy.int);
         rangeNy = numpy.arange(Ny,dtype=numpy.int);
-        
+
         for pos in numpy.random.permutation(range(self.N_pie)):
             indy = rangeNy + positions[pos,0];
             indx = rangeNx + positions[pos,1];
-            
+
             if switch_probemask == True:
                 probe_norm = scipy.linalg.norm(this_probe,'fro') / \
-                                sqrt(numpy.size(this_probe));
+                                    sqrt(numpy.size(this_probe));
                 this_probe *= probemask;
                 this_probe *= probe_norm/(scipy.linalg.norm(this_probe,'fro') / \
-                                sqrt(numpy.size(this_probe)));
-            
+                                    sqrt(numpy.size(this_probe)));
+
             phi = this_probe * this_object[indy,:][:,indx];
             old_phi_hat = scipy.fftpack.fft2(phi) / fnorm;
             phi_hat = magproj(old_phi_hat,amp_exp_norm[:,:,pos]);
-            if not fmask is None:
+            if fmask is not None:
                 phi_hat = phi_hat * fmask[:,:,pos] + old_phi_hat * \
-                            (fmask[:,:,pos] == 0).astype(fmask.dtype);
+                                (fmask[:,:,pos] == 0).astype(fmask.dtype);
             phi_prime = scipy.fftpack.ifft2(phi_hat) * fnorm;
-            
-            for k in range(inner_it):
+
+            for _ in range(inner_it):
                 this_object_old = this_object.copy();
                 this_probe_old = this_probe.copy();
                 cthis_probe_old = numpy.conj(this_probe_old);
                 i_probe = numpy.amax(numpy.real(cthis_probe_old*this_probe_old))+1e-8;
                 #i_probe = numpy.amax(numpy.abs(this_probe_old)**2) + 1e-8;
                 d_phi = phi_prime - phi;
-                
+
                 n_object = (cthis_probe_old/i_probe) * d_phi;
-                
+
                 for y in range(Ny):
                     this_object[indy[y],indx] = \
-                                this_object_old[indy[y],indx] + n_object[y,:];
-                
+                                    this_object_old[indy[y],indx] + n_object[y,:];
+
                 phi = this_probe * this_object[indy,:][:,indx];
                 phi_hat = scipy.fftpack.fft2(phi) / fnorm;
                 phi_hat = magproj(phi_hat,amp_exp_norm[:,:,pos]);
                 phi_prime = scipy.fftpack.ifft2(phi_hat) * fnorm;
-                
+
             if switch_object_support_constraint == True:
                 this_object *= object_support;
-            
+
             abs_object = numpy.abs(this_object);
             high = (abs_object > trans_max_true).astype(this_phi.dtype);
             low = (abs_object < trans_min_true).astype(this_phi.dtype);
             this_object = ((1.0-low)*(1.0-high)*this_object) + \
-                ((low*trans_min_true)+(high*trans_max_true)) * \
-                this_object / (abs_object+1e-30);
-            
+                    ((low*trans_min_true)+(high*trans_max_true)) * \
+                    this_object / (abs_object+1e-30);
+
             this_phi[:,:,pos] = this_probe * this_object[indy,:][:,indx];
-        
+
         return Pty(this_phi,this_object,this_probe);
 
 
@@ -321,14 +324,15 @@ class P_thibault_f(ProxOperator):
         """
         Initialization
         """
-        self.Nx = config['Nx']; self.Ny = config['Ny'];
+        self.Nx = config['Nx']
+        self.Ny = config['Ny'];
         self.N_pie = config['N_pie'];
         self.positions = config['positions'];
         self.amp_exp_norm = config['amp_exp_norm'];
         self.fnorm = sqrt(self.Nx*self.Ny);
         self.ptychography_prox = config['ptychography_prox'];
         self.fmask = config['fmask'];
-        if not self.fmask is None:
+        if self.fmask is not None:
             self.fmask = self.fmask.reshape((self.fmask.shape[0],
                                              self.fmask.shape[1],
                                              self.fmask.shape[2]*
@@ -341,16 +345,17 @@ class P_thibault_f(ProxOperator):
         ----------
         u : Pty - Input
         """
-        Nx = self.Nx; Ny = self.Ny;
+        Nx = self.Nx
+        Ny = self.Ny;
         fnorm = self.fnorm;
         positions = self.positions;
         amp_exp_norm = self.amp_exp_norm;
         fmask = self.fmask;
-        
+
         phi = u.phi.copy();
         obj = u.obj;
         probe = u.probe;
-        
+
         if self.ptychography_prox == 'Thibault_AP':
             rangeNx = numpy.arange(Nx,dtype=numpy.int);
             rangeNy = numpy.arange(Ny,dtype=numpy.int);
@@ -358,15 +363,15 @@ class P_thibault_f(ProxOperator):
                 indy = rangeNy + positions[pos,0];
                 indx = rangeNx + positions[pos,1];
                 phi[:,:,pos] = probe * obj[indy,:][:,indx];
-        
+
         for pos in range(self.N_pie):
             old_phi_hat = scipy.fftpack.fft2(phi[:,:,pos]) / fnorm;
             phi_hat = magproj(old_phi_hat,amp_exp_norm[:,:,pos]);
-            if not fmask is None:
+            if fmask is not None:
                 phi_hat = phi_hat * fmask[:,:,pos] + old_phi_hat * \
-                            (fmask[:,:,pos] == 0).astype(fmask.dtype);
+                                (fmask[:,:,pos] == 0).astype(fmask.dtype);
             phi[:,:,pos] = scipy.fftpack.ifft2(phi_hat) * fnorm;
-        
+
         return Pty(phi,obj.copy(),probe.copy());
 
 
@@ -398,7 +403,8 @@ class P_thibault_o(ProxOperator):
         ----------
         u : Pty - Input
         """
-        Nx = self.Nx; Ny = self.Ny;
+        Nx = self.Nx
+        Ny = self.Ny;
         N_pie = self.N_pie;
         positions = self.positions;
         switch_object_support_constraint = self.switch_object_support_constraint;
@@ -407,19 +413,19 @@ class P_thibault_o(ProxOperator):
         trans_min_true = self.trans_min_true;
         switch_probemask = self.switch_probemask;
         probe_mask = self.probe_mask;
-        
+
         rangeNx = numpy.arange(Nx,dtype=numpy.int);
         rangeNy = numpy.arange(Ny,dtype=numpy.int);
-        
+
         phi = u.phi;
-        
+
         this_probe = u.probe.copy();
         this_object = None;
-        
+
         obj_enum = numpy.empty_like(u.obj);
         obj_denom = numpy.empty_like(u.obj);
-        
-        for i in (0,1,2):
+
+        for _ in (0, 1, 2):
             obj_enum.fill(1e-30);
             obj_denom.fill(1e-30);
             c_probe = numpy.conj(this_probe)
@@ -427,34 +433,34 @@ class P_thibault_o(ProxOperator):
             for pos in range(N_pie):
                 indy = rangeNy + positions[pos,0];
                 indx = rangeNx + positions[pos,1];
-                
+
                 for y in range(Ny):
                     obj_enum[indy[y],indx] += c_probe[y,:] * phi[y,:,pos];
                     obj_denom[indy[y],indx] += i_probe[y,:];
-            
+
             this_object = obj_enum / obj_denom;
-            
+
             if switch_object_support_constraint == True:
                 this_object *= object_support;
-            
+
             abs_object = numpy.abs(this_object);
             high = (abs_object > trans_max_true);
             low = (abs_object < trans_min_true);
             this_object *= (1.0-low)*(1.0-high) + \
-                            (low*trans_min_true+high*trans_max_true) /        \
-                            (abs_object+1e-30);
-            
+                                (low*trans_min_true+high*trans_max_true) /        \
+                                (abs_object+1e-30);
+
             if switch_probemask == True:
                 this_probe *= probe_mask;
-        
+
         phi = phi.copy();
-        
+
         if self.ptychography_prox == 'Thibault':
             for pos in range(N_pie):
                 indy = rangeNy + positions[pos,0];
                 indx = rangeNx + positions[pos,1];
                 phi[:,:,pos] = this_probe * this_object[indy,:][:,indx];
-        
+
         return Pty(phi,this_object,this_probe);
 
 
@@ -487,7 +493,8 @@ class P_thibault_op(ProxOperator):
         ----------
         u : Pty - Input
         """
-        Nx = self.Nx; Ny = self.Ny;
+        Nx = self.Nx
+        Ny = self.Ny;
         N_pie = self.N_pie;
         positions = self.positions;
         switch_object_support_constraint = self.switch_object_support_constraint;
@@ -497,44 +504,44 @@ class P_thibault_op(ProxOperator):
         switch_probemask = self.switch_probemask;
         probe_mask = self.probe_mask;
         cfact = self.cfact;
-        
+
         rangeNx = numpy.arange(Nx,dtype=numpy.int);
         rangeNy = numpy.arange(Ny,dtype=numpy.int);
 
         phi = u.phi;
-        
+
         this_probe = u.probe.copy();
         this_object = None;
-        
+
         obj_enum = numpy.empty_like(u.obj);
         obj_denom = numpy.empty_like(u.obj);
-        
-        for i in (0,1,2,3,4):
+
+        for _ in (0, 1, 2, 3, 4):
             obj_enum.fill(1e-8);
             obj_denom.fill(1e-8);
             c_probe = numpy.conj(this_probe);
             i_probe = numpy.real(c_probe*this_probe);
-            
+
             for pos in range(N_pie):
                 indy = rangeNy + positions[pos,0];
                 indx = rangeNx + positions[pos,1];
-                
+
                 for y in range(Ny):
                     obj_enum[indy[y],indx] += c_probe[y,:] * phi[y,:,pos];
                     obj_denom[indy[y],indx] += i_probe[y,:];
-                
+
             this_object = obj_enum / obj_denom;
-            
+
             if switch_object_support_constraint == True:
                 this_object *= object_support;
-            
+
             abs_object = numpy.abs(this_object);
             high = (abs_object > trans_max_true);
             low = (abs_object < trans_min_true);
             this_object *= (1.0-low)*(1.0-high) + \
-                        (low*trans_min_true+high*trans_max_true) /        \
-                        (abs_object+1e-30);
-            
+                            (low*trans_min_true+high*trans_max_true) /        \
+                            (abs_object+1e-30);
+
             probe_enum = cfact * this_probe;
             probe_denom = cfact;
             conj_obj = numpy.conj(this_object);
@@ -542,28 +549,28 @@ class P_thibault_op(ProxOperator):
             for pos in range(N_pie):
                 indy = rangeNy + positions[pos,0];
                 indx = rangeNx + positions[pos,1];
-                
+
                 probe_enum += conj_obj[indy,:][:,indx] * phi[:,:,pos];
                 probe_denom += abs_obj[indy,:][:,indx];
-            
+
             this_probe = probe_enum / probe_denom;
-            
+
             if switch_probemask == True:
                 probe_norm = scipy.linalg.norm(this_probe,'fro') /        \
-                                sqrt(numpy.size(this_probe));
+                                    sqrt(numpy.size(this_probe));
                 this_probe *= probe_mask;
                 this_probe *= probe_norm /      \
-                                (scipy.linalg.norm(this_probe,'fro') /    \
-                                sqrt(numpy.size(this_probe)));
-        
+                                    (scipy.linalg.norm(this_probe,'fro') /    \
+                                    sqrt(numpy.size(this_probe)));
+
         phi = phi.copy();
-        
+
         if self.ptychography_prox == 'Thibault':
             for pos in range(N_pie):
                 indy = rangeNy + positions[pos,0];
                 indx = rangeNx + positions[pos,1];
                 phi[:,:,pos] = this_probe * this_object[indy,:][:,indx];
-            
+
         return Pty(phi,this_object,this_probe);
 
 
@@ -803,13 +810,14 @@ class P_PHeBIE_phi(ProxOperator):
         """
         Initialization
         """
-        self.Nx = config['Nx']; self.Ny = config['Ny'];
+        self.Nx = config['Nx']
+        self.Ny = config['Ny'];
         self.N_pie = config['N_pie'];
         self.fnorm = sqrt(self.Nx*self.Ny);
         self.positions = config['positions'];
         self.amp_exp_norm = config['amp_exp_norm'];
         self.fmask = config['fmask'];
-        if not self.fmask is None:
+        if self.fmask is not None:
             self.fmask = self.fmask.reshape((self.fmask.shape[0],
                                              self.fmask.shape[1],
                                              self.fmask.shape[2]*
@@ -826,25 +834,25 @@ class P_PHeBIE_phi(ProxOperator):
         positions = self.positions;
         amp_exp_norm = self.amp_exp_norm;
         fmask = self.fmask;
-        
+
         rangeNx = numpy.arange(self.Nx,dtype=numpy.int);
         rangeNy = numpy.arange(self.Ny,dtype=numpy.int);
-        
+
         phi = u.phi.copy();
         obj = u.obj;
         probe = u.probe;
-        
+
         for pos in range(self.N_pie):
             indy = rangeNy + positions[pos,0];
             indx = rangeNx + positions[pos,1];
             new_phi = probe * obj[indy,:][:,indx];
             old_phi_hat = scipy.fftpack.fft2(new_phi) / fnorm;
             phi_hat = magproj(old_phi_hat,amp_exp_norm[:,:,pos]);
-            if not fmask is None:
+            if fmask is not None:
                 phi_hat = phi_hat * fmask[:,:,pos] + old_phi_hat * \
-                            (fmask[:,:,pos] == 0).astype(fmask.dtype);
+                                (fmask[:,:,pos] == 0).astype(fmask.dtype);
             phi[:,:,pos] = scipy.fftpack.ifft2(phi_hat) * fnorm;
-        
+
         return Pty(phi,obj.copy(),probe.copy());
     
 
@@ -858,14 +866,15 @@ class P_PHeBIE_phi_regularized(ProxOperator):
         """
         Initialization
         """
-        self.Nx = config['Nx']; self.Ny = config['Ny'];
+        self.Nx = config['Nx']
+        self.Ny = config['Ny'];
         self.N_pie = config['N_pie'];
         self.fnorm = sqrt(self.Nx*self.Ny);
         self.positions = config['positions'];
         self.overrelax = config['overrelax'];
         self.amp_exp_norm = config['amp_exp_norm'];
         self.fmask = config['fmask'];
-        if not self.fmask is None:
+        if self.fmask is not None:
             self.fmask = self.fmask.reshape((self.fmask.shape[0],
                                              self.fmask.shape[1],
                                              self.fmask.shape[2]*
@@ -882,28 +891,28 @@ class P_PHeBIE_phi_regularized(ProxOperator):
         positions = self.positions;
         amp_exp_norm = self.amp_exp_norm;
         fmask = self.fmask;
-        
+
         rangeNx = numpy.arange(self.Nx,dtype=numpy.int);
         rangeNy = numpy.arange(self.Ny,dtype=numpy.int);
-        
+
         phi = u.phi.copy();
         obj = u.obj;
         probe = u.probe;
-        
+
         gamma = self.overrelax - 1;
-        
+
         for pos in range(self.N_pie):
             indy = rangeNy + positions[pos,0];
             indx = rangeNx + positions[pos,1];
             new_phi = (2.0/(2.0+gamma)) * probe * obj[indy,:][:,indx] + \
-                        (gamma/(2.0+gamma)) * phi[:,:,pos];
+                            (gamma/(2.0+gamma)) * phi[:,:,pos];
             old_phi_hat = scipy.fftpack.fft2(new_phi) / fnorm;
             phi_hat = magproj(old_phi_hat,amp_exp_norm[:,:,pos]);
-            if not fmask is None:
+            if fmask is not None:
                 phi_hat = phi_hat * fmask[:,:,pos] + old_phi_hat * \
-                            (fmask[:,:,pos] == 0).astype(fmask.dtype);
+                                (fmask[:,:,pos] == 0).astype(fmask.dtype);
             phi[:,:,pos] = scipy.fftpack.ifft2(phi_hat) * fnorm;
-        
+
         return Pty(phi,obj.copy(),probe.copy());
 
 
@@ -920,7 +929,8 @@ class PtychographyStats():
         """
         Initialization
         """
-        self.Nx = config['Nx']; self.Ny = config['Ny'];
+        self.Nx = config['Nx']
+        self.Ny = config['Ny'];
         self.dim = config['dim'];
         self.N_pie = config['N_pie'];
         self.norm_data = config['norm_data'];
@@ -933,7 +943,7 @@ class PtychographyStats():
         self.amp_exp_norm = config['amp_exp_norm'];
         self.ptychography_prox = config['ptychography_prox'];
         self.fmask = config['fmask'];
-        if not self.fmask is None:
+        if self.fmask is not None:
             self.fmask = self.fmask.reshape((self.fmask.shape[0],
                                              self.fmask.shape[1],
                                              self.fmask.shape[2]*

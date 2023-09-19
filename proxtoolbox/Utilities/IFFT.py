@@ -21,11 +21,10 @@ def IFFT(F):
         F[1:res:2,:]=-F[1:res:2,:]
         F[:,1:res:2]=-F[:,1:res:2];
         F=res*F;
-        f= np.fft.ifft2(F);
+        return np.fft.ifft2(F);
     else:
-        F = F.ravel('F'); #create 1-d array, colum-major order (matlab style), not really nice
+        F = F.ravel('F')
         F[1:res:2] =-F[1:res:2];
-        F = F.reshape(shape[1],shape[0]).T; #back to original shape
+        F = F.reshape(shape[1],shape[0]).T
         F=np.sqrt(res)*F;
-        f= np.fft.ifft(F,axis=0);
-    return f;
+        return np.fft.ifft(F,axis=0);

@@ -46,38 +46,38 @@ class MainWindow(QtGui.QMainWindow):
 		'bs_factor':int(self.bs_factor.toPlainText()),
 		'fmask':str(self.fmask.currentText()),
 		'overrelax':int(self.overrelax.toPlainText()),}
-		
+
 		if os.path.isfile('data_input.json'):
 			with open('data_input.json') as data_file:
 				data_input = json.load(data_file)
 				config.update(data_input)
 			os.remove('data_input.json')
-			
+
 		if os.path.isfile('data_warmup.json'):
 			with open('data_warmup.json') as data_file:
 				data_warmup = json.load(data_file)
 				config.update(data_warmup)
 			os.remove('data_warmup.json')
 		else:
-			config.update({'warmup':'false',})
-		
+			config['warmup'] = 'false'
+
 		if os.path.isfile('data_blocking.json'):
 			with open('data_blocking.json') as data_file:
 				data_blocking = json.load(data_file)
 				config.update(data_blocking)
 			os.remove('data_blocking.json')
 		else:
-			config.update({'blocking_switch':'false',})
-		
+			config['blocking_switch'] = 'false'
+
 		with open('data_in.json','w') as outfile:
 			json.dump(config, outfile)
-		
-		
-		if str(self.algorithm.currentText()) == 'RAAR' or str(self.algorithm.currentText()) == 'HPR':
+
+
+		if str(self.algorithm.currentText()) in {'RAAR', 'HPR'}:
 			os.system("relaxtion_parameters_in_raar_hpr_haar.py")
-		
+
 		self.close()
-		
+
 		os.system("./start_ptychography.py")
 		
 if __name__ == '__main__':

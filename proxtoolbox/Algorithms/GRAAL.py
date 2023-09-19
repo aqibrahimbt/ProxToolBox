@@ -64,7 +64,9 @@ class GRAAL(SimpleAlgorithm):
         self.prox1 = config['proxoperators'][0](config)
         self.prox2 = config['proxoperators'][1](config)
         self.norm_data = config['norm_data']
-        self.Nx = config['Nx']; self.Ny = config['Ny']; self.Nz = config['Nz'];
+        self.Nx = config['Nx']
+        self.Ny = config['Ny']
+        self.Nz = config['Nz'];
         self.product_space_dimension = config['product_space_dimension']
         self.iter = 0
 
@@ -73,20 +75,13 @@ class GRAAL(SimpleAlgorithm):
             self.truth_dim = config['truth_dim']
             self.norm_truth = config['norm_truth']
 
-        if 'diagnostic' in config:
-            self.diagnostic = True
-        else:
-            self.diagnostic = False
-
+        self.diagnostic = 'diagnostic' in config
         self.GRAAL_initialized = False
 
-        if(not('phi' in config)):
-                self.phi = 1.4
-        else:
-                self.phi= config['phi']
+        self.phi = 1.4 if 'phi' not in config else config['phi']
         self.tau = 1. / self.phi + 1. / self.phi**2
 
-        if(not('inv_Lipschitz_const' in config)):
+        if 'inv_Lipschitz_const' not in config:
             self.inv_Lipschitz_const = 0.5
         else:
             self.inv_Lipschitz_const = config['inv_Lipschitz_const']

@@ -270,7 +270,9 @@ class ComputationFrame(QWidget):
         max_iterEdit = self.max_iterEdit.text()
         tolEdit = self.tolEdit.text()
 
-        print(comboBox + ' ' + comboBox1 + ' ' + constraintEdit + ' ' + beta_0Edit + ' ' + beta_maxEdit + ' ' + beta_switchEdit + ' ' + max_iterEdit + ' ' + tolEdit)
+        print(
+            f'{comboBox} {comboBox1} {constraintEdit} {beta_0Edit} {beta_maxEdit} {beta_switchEdit} {max_iterEdit} {tolEdit}'
+        )
 
 
 if __name__ == '__main__':
