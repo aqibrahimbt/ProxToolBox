@@ -120,14 +120,15 @@ class PtychographyStats():
     """
     
     def __init__(self,config):
-        self.Nx = config['Nx']; self.Ny = config['Ny'];
+        self.Nx = config['Nx']
+        self.Ny = config['Ny'];
         self.dim = config['dim'];
         self.N_pie = config['N_pie'];
         self.norm_data = config['norm_data'];
         self.positions = config['positions'];
         self.fnorm = math.sqrt(self.Nx*self.Ny);
         self.ptychography_prox = config['ptychography_prox'];
-        if not self.fmask is None:
+        if self.fmask is not None:
             self.fmask = self.fmask.reshape((self.fmask.shape[0],
                                              self.fmask.shape[1],
                                              self.fmask.shape[2]*
@@ -440,88 +441,84 @@ class Inpainting(Problem):
         Ny = self.config['Ny'];
         nx = self.config['nx'];
         ny = self.config['ny'];
-        
+
         rangeNx = numpy.arange(Nx,dtype=numpy.int);
         rangeNy = numpy.arange(Ny,dtype=numpy.int);
-        
+
         # 
         # Physical parameters of the experiment
         #
-        
-        E = 6.2;                # X-ray energy [keV]
-        l = 1e-10*12.3984/E;    # Wavelength [m]
-        
+
+        E = 6.2
+        l = 1e-10*12.3984/E
         # Pixel dimensions [m]
         d2x = 172e-6;
         d2y = 172e-6;
-        
+
         # Origin of the coordinate system
         origin_x0 = Nx/2 + 1;
         origin_y0 = Ny/2 + 1;
-        
+
         # Position(s) of sample along optical axis
-        z01 = 0.5e-4;       # distance focus <-> sample [m]
-        z02 = 7.2;          # distance focus <-> detector [m]
-        z12 = z02-z01;      # distance sample <-> detector [m]
-        
+        z01 = 0.5e-4
+        z02 = 7.2
+        z12 = z02-z01
         d1x = l*z12/(Nx*d2x);
         d1y = l*z12/(Ny*d2y);
-        
+
         #
         # Scan parameters
         #
-        
+
         scan_stepsize = self.config['scan_stepsize'];
         pie_step_x = scan_stepsize;
         pie_step_y = scan_stepsize;
-        
+
         positions = None;
-        
-        if(self.config['scan_type'] == 'round_roi'):
+
+        if (self.config['scan_type'] == 'round_roi'):
             raise NotImplementedError('NYI')
-        else: # i.e., scna_type == 'raster'
-            positions = numpy.empty((nx*ny,2));
-            n_fast = numpy.arange(nx);
-            ind = 0;
-            for n_slow in range(ny):
-                ind = n_slow*ny;
-                positions[ind:ind+nx,0] = (pie_step_y/d1y) * n_slow;
-                positions[ind:ind+nx,1] = (pie_step_x/d1x) * n_fast;
-        
+        positions = numpy.empty((nx*ny,2));
+        n_fast = numpy.arange(nx);
+        ind = 0;
+        for n_slow in range(ny):
+            ind = n_slow*ny;
+            positions[ind:ind+nx,0] = (pie_step_y/d1y) * n_slow;
+            positions[ind:ind+nx,1] = (pie_step_x/d1x) * n_fast;
+
         positions[:,0] -= numpy.amin(positions[:,0]);
         positions[:,1] -= numpy.amin(positions[:,1]);
-        positions[numpy.modf(positions)[0] == 0.5] += 0.01; # numpy.round is weird
+        positions[numpy.modf(positions)[0] == 0.5] += 0.01
         positions = numpy.round(positions).astype(numpy.int);
-        
+
         sample_plane = None;
-        if self.config['sim_data_type'] == 'gaenseliesel':
-            g = pyplot.imread('inputdata/gaenseliesel.png').astype(numpy.float);
-            g /= numpy.amax(g);
-            g = 0.8*g + 0.1;
-            sample_plane = numpy.abs(g) * (numpy.cos(g) + 1j*numpy.sin(g));
-        else:
+        if self.config['sim_data_type'] != 'gaenseliesel':
             raise NotImplementedError('Only \'gaenseliesel\' is supported')
-        
+
+        g = pyplot.imread('inputdata/gaenseliesel.png').astype(numpy.float);
+        g /= numpy.amax(g);
+        g = 0.8*g + 0.1;
+        sample_plane = numpy.abs(g) * (numpy.cos(g) + 1j*numpy.sin(g));
         #
         # Illumination functions
         #
-        
+
         # FWHM of gaussian illumination [m]
         fwhm = 0.5e-6;
         w0 = fwhm/(2*math.sqrt(math.log(2)));
-        
+
         # Get coordinate system in sample plane
         x = (numpy.arange(1,Nx+1) - ((Nx//2)+1)) * d1x;
         y = (numpy.arange(1,Ny+1) - ((Ny//2)+1)) * d1y;
         X,Y = numpy.meshgrid(x,y);
-        
+
         # Get illumination in sample plane
         u = self._gaussu(numpy.sqrt(X**2 + Y**2),z01,l,w0);
-        
+
         # Scan along xyz-directions
         i_exp = numpy.zeros((Ny,Nx,ny,nx));
         probe = u;
-        
+
         # Generate the data
         ind = 0;
         for akk in range(ny):
@@ -534,14 +531,14 @@ class Inpainting(Problem):
                 esw = probe * sample;
                 # Calculate coherent diffraction pattern
                 i_exp[:,:,akk,bkk] = numpy.abs(numpy.rot90(numpy.roll( \
-                    numpy.roll(scipy.fftpack.fft2(esw),origin_x0-1,axis=0), \
-                    origin_y0-1,axis=1),-2))**2;
-                
+                        numpy.roll(scipy.fftpack.fft2(esw),origin_x0-1,axis=0), \
+                        origin_y0-1,axis=1),-2))**2;
+
                 ind += 1;
-        
+
         self.config['trans_min_true'] = 0;
         self.config['trans_max_true'] = 1;
-        
+
         return d1x, d1y, l, z01, positions, probe, sample_plane, i_exp;
     
     

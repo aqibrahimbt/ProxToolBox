@@ -24,15 +24,15 @@ class MainWindow(QtGui.QMainWindow):
 		'proj2':str(self.proj2.toPlainText()),
 		'maxiter':int(self.maxiter.toPlainText()),
 		'tol':float(self.tol.toPlainText()),};
-		
+
 		with open('data_in.json','w') as outfile:
 			json.dump(config, outfile)
-		
-		if str(self.algorithm.currentText()) == 'RAAR' or str(self.algorithm.currentText()) == 'HPR':
+
+		if str(self.algorithm.currentText()) in {'RAAR', 'HPR'}:
 			os.system("relaxtion_parameters_in_raar_hpr_haar.py")
-		
+
 		self.close()
-		
+
 		os.system("start_sudoku.py")
 
 		

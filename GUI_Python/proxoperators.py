@@ -166,11 +166,12 @@ class P_parallel(ProxOperator):
                 'projs':sequence of ProxOperator
                     Sequence of prox operators to be used. (The classes, no instances)
         """
-        self.n = config['Nx']; self.m = config['Ny']; self.p = config['Nz'];
+        self.n = config['Nx']
+        self.m = config['Ny']
+        self.p = config['Nz'];
         self.K = config['dim'];
         self.proj = [];
-        for p in config['projectors']:
-            self.proj.append(p(config));
+        self.proj.extend(p(config) for p in config['projectors'])
         
     def work(self,u):
         """

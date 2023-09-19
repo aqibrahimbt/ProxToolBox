@@ -25,19 +25,19 @@ def gaussian(points,var,center_index):
     L = 2
     x = arange(-L/2,L/2,L/points)
     if dim==1:
-      centerx = x[center_index]
-      g = exp(-((x-centerx)**2)*pi/var[1])
+        centerx = x[center_index]
+        g = exp(-((x-centerx)**2)*pi/var[1])
     elif dim==2:
         
-      if( (var.size==1) and (dim==2)):
-        var[1]=var[0]
-        
-      centerx=x[center_index[0]]
-      centery=x[center_index[1]]
-      
-      g = zeros((points,points))
-      
-      for j in range(points):
-        g[j,:]=exp(-(((x-centerx)**2)/var[0]+((x[j]-centery)**2)/var[1])*pi)
-    
+        if var.size == 1:
+            var[1]=var[0]
+
+        centerx=x[center_index[0]]
+        centery=x[center_index[1]]
+
+        g = zeros((points,points))
+
+        for j in range(points):
+          g[j,:]=exp(-(((x-centerx)**2)/var[0]+((x[j]-centery)**2)/var[1])*pi)
+
     return g

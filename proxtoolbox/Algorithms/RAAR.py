@@ -22,7 +22,6 @@ class RAAR(SimpleAlgorithm):
         tmp2=self.prox1.work(tmp1)
         # update
         beta = exp((-iter/beta_switch)**3)*beta0+(1-exp((-iter/beta_switch)**3))*beta_max # unrelaxes as the
-        unew = (beta*(2*tmp2-tmp1) + (1-beta)*tmp1 + u)/2
-        return unew
+        return (beta*(2*tmp2-tmp1) + (1-beta)*tmp1 + u)/2
 
 

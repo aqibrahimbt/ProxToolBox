@@ -42,7 +42,9 @@ class QNAP(Algorithm):
         self.prox1 = config['proxoperators'][0](config)
         self.prox2 = config['proxoperators'][1](config)
         self.norm_data = config['norm_data']
-        self.Nx = config['Nx']; self.Ny = config['Ny']; self.Nz = config['Nz']
+        self.Nx = config['Nx']
+        self.Ny = config['Ny']
+        self.Nz = config['Nz']
         self.product_space_dimension = config['product_space_dimension']
 
         if 'truth' in config:
@@ -50,11 +52,7 @@ class QNAP(Algorithm):
             self.truth_dim = config['truth_dim']
             self.norm_truth = config['norm_truth']
 
-        if 'diagnostic' in config:
-            self.diagnostic = True
-        else:
-            self.diagnostic = False
-
+        self.diagnostic = 'diagnostic' in config
         self.samsara = Samsara()
 
     def run(self, u, tol, maxiter):
@@ -66,7 +64,8 @@ class QNAP(Algorithm):
         ##### PREPROCESSING
 
         iter = self.iter
-        prox1 = self.prox1; prox2 = self.prox2
+        prox1 = self.prox1
+        prox2 = self.prox2
 
         if u.ndim < 3:
             p = 1
@@ -93,7 +92,7 @@ class QNAP(Algorithm):
         norm_data = self.norm_data
 
         tmp1 = self.prox2.work(u)
-        
+
         gradfnew_vec = zeros_like(u[:,0])
 
         while iter < maxiter and change[iter] >= tol:
@@ -109,13 +108,13 @@ class QNAP(Algorithm):
             # objective function, and the negative gradient tmp_u- u
         if (p==1) and (q==1):
             if (np.all(isreal(u))):
+                uold_vec=u[:,0]
+                unew_vec=tmp_u[:,0]
                 if iter > 4:
-                    uold_vec=u[:,0]
-                    unew_vec=tmp_u[:,0]
                     gradfold_vec = gradfnew_vec
                     gradfnew_vec = (u[:,0]- tmp_u[:,0])
                     unew_vec, uold_vec, gap[iter-1], gradfold_vec, change[iter] = \
-                        self.samsara.run(uold_vec, unew_vec,
+                            self.samsara.run(uold_vec, unew_vec,
                         gap[iter-2]*self.Nx*self.Ny,
                         gap[iter-1]*self.Nx*self.Ny,
                         gradfold_vec, gradfnew_vec)
@@ -123,33 +122,33 @@ class QNAP(Algorithm):
                         tmp_u[:,j]=unew_vec
                     gap[iter-1]=gap[iter-1]/(self.Nx*self.Ny)
                 else:
-                    unew_vec=tmp_u[:,0]
-                    uold_vec=u[:,0]
                     gradfnew_vec = (u[:,0]- tmp_u[:,0])
-            else:
-                if iter>3:
-                    uold_vec=reshape(concatenate(real(u[:,0]), imag(u[:,0])),
-                        self.Ny*self.Nx*2, 0);
-                    unew_vec=reshape(concatenate(real(tmp_u[:,0]), imag(tmp_u[:,0])),
-                        self.Ny*self.Nx*2, 0)
-                    gradfold_vec = gradfnew_vec
-                    gradfnew_vec = uold_vec-unew_vec
-                    unew_vec,uold_vec,gap[iter-0],gradfold_vec, change[iter]= \
+            elif iter>3:
+                uold_vec=reshape(concatenate(real(u[:,0]), imag(u[:,0])),
+                    self.Ny*self.Nx*2, 0);
+                unew_vec=reshape(concatenate(real(tmp_u[:,0]), imag(tmp_u[:,0])),
+                    self.Ny*self.Nx*2, 0)
+                gradfold_vec = gradfnew_vec
+                gradfnew_vec = uold_vec-unew_vec
+                unew_vec,uold_vec,gap[iter-0],gradfold_vec, change[iter]= \
                         feval('samsara', uold_vec, unew_vec,
-                        gap(iter-2)*self.Nx*self.Ny,
-                        gap(iter-1)*self.Nx*self.Ny,
-                        gradfold_vec, gradfnew_vec)
+                    gap(iter-2)*self.Nx*self.Ny,
+                    gap(iter-1)*self.Nx*self.Ny,
+                    gradfold_vec, gradfnew_vec)
                     # now reshape unew_vec
-                    tmp_u_vec = unew_vec[0:self.Ny*self.Nx-1]+1j*unew_vec[self.Ny*self.Nx:self.Ny*self.Nx*2-1]
-                    for j in range(self.product_space_dimension):
-                        tmp_u[:,j]=tmp_u_vec
-                    gap[iter-1]=gap[iter-1]/(self.Nx*self.Ny)
-                else:
-                    uold_vec=reshape([real(u[:,0]), imag(u[:,0])],
-                        self.Ny*self.Nx*2, 1)
-                    unew_vec=reshape([real(tmp_u[:,0]), imag(tmp_u[:,0])],
-                        self.Ny*self.Nx*2, 1)
-                    gradfnew_vec = uold_vec-unew_vec
+                tmp_u_vec = (
+                    unew_vec[: self.Ny * self.Nx - 1]
+                    + 1j * unew_vec[self.Ny * self.Nx : self.Ny * self.Nx * 2 - 1]
+                )
+                for j in range(self.product_space_dimension):
+                    tmp_u[:,j]=tmp_u_vec
+                gap[iter-1]=gap[iter-1]/(self.Nx*self.Ny)
+            else:
+                uold_vec=reshape([real(u[:,0]), imag(u[:,0])],
+                    self.Ny*self.Nx*2, 1)
+                unew_vec=reshape([real(tmp_u[:,0]), imag(tmp_u[:,0])],
+                    self.Ny*self.Nx*2, 1)
+                gradfnew_vec = uold_vec-unew_vec
 
         elif (p!=1) and (q==1):
             if (np.all(isreal(u))):
@@ -163,7 +162,7 @@ class QNAP(Algorithm):
                     gradfold_vec = gradfnew_vec
                     gradfnew_vec = uold_vec-unew_vec
                     unew_vec,uold_vec,gap[iter-1],gradfold_vec, change[iter]= \
-                        feval('samsara', uold_vec, unew_vec, 
+                            feval('samsara', uold_vec, unew_vec, 
                         gap(iter-2)*self.Nx*self.Ny,
                         gap(iter-1)*self.Nx*self.Ny,
                         gradfold_vec, gradfnew_vec);
@@ -185,7 +184,7 @@ class QNAP(Algorithm):
                     gradfold_vec = gradfnew_vec
                     gradfnew_vec = uold_vec-unew_vec
                     unew_vec,uold_vec,gap[iter-1],gradfold_vec, change[iter]= \
-                        feval('samsara', uold_vec, unew_vec,
+                            feval('samsara', uold_vec, unew_vec,
                         gap(iter-2)*self.Nx*self.Ny,
                         gap(iter-1)*self.Nx*self.Ny,
                         gradfold_vec, gradfnew_vec)

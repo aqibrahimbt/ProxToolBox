@@ -48,10 +48,7 @@ class DRprotein:
         self.problemName = problemName
 
         #Seed the random number generator.
-        if startingSeed:
-            seed = startingSeed
-        else:
-            seed = np.random.random_integers(1)
+        seed = startingSeed if startingSeed else np.random.random_integers(1)
         self.setRandomSeed(seed)
 
         self.inputFile   = ''
@@ -60,8 +57,8 @@ class DRprotein:
         #Set the logFile and imageFile based on the problemName
         #self.logFile = 'LogFiles/' + self.problemName + '_'
         #self.imageFile = 'Images/' + self.problemName + '_'
-        self.logFile = self.problemName + '_'
-        self.imageFile = self.problemName + '_'
+        self.logFile = f'{self.problemName}_'
+        self.imageFile = f'{self.problemName}_'
         fileSuffix = 0
         while(os.path.isfile(self.logFile + str(fileSuffix).zfill(3) + '.txt')):
             fileSuffix += 1
@@ -74,9 +71,9 @@ class DRprotein:
 
         # Print & log initialisation info.
         self.drucken(" DRprotein ".center(80,"="))
-        self.drucken('Run filename:           ' + os.path.basename(__file__))
+        self.drucken(f'Run filename:           {os.path.basename(__file__)}')
         self.drucken('Current time:           ' + time.strftime("%Y-%m-%d %H:%M:%S"))
-        self.drucken('Starting (random) seed: ' + str(self.randomSeed))
+        self.drucken(f'Starting (random) seed: {str(self.randomSeed)}')
         self.drucken('')
 
         self.setGapEps()
@@ -111,11 +108,13 @@ http://jmol.sourceforge.net or via your distribution's package manager.
         elif fileType == ".xyz":
             self.readXYZ()
         else:
-            raise Exception('Input file type ' + fileType + ' not recognised.')
+            raise Exception(f'Input file type {fileType} not recognised.')
 
     def addOutputFile(self, outputFile):
         splitText = os.path.splitext(outputFile)
-        self.outputFile = splitText[0] + "_" + str(self.fileSuffix).zfill(3) + splitText[1]
+        self.outputFile = (
+            f"{splitText[0]}_{str(self.fileSuffix).zfill(3)}{splitText[1]}"
+        )
 
     def setRandomSeed(self, startingSeed=2):
         self.randomSeed = startingSeed
@@ -152,9 +151,9 @@ http://jmol.sourceforge.net or via your distribution's package manager.
     #        self.trueMatrix        = the corresponding EDM
     def readPDB(self):
         self.drucken(" Loading PDB File ".center(80,"="))
-        self.drucken("Input file:      " + self.inputFile)
+        self.drucken(f"Input file:      {self.inputFile}")
         t0 = time.time()
-        self.trueCoordinates = []        
+        self.trueCoordinates = []
         with open(self.inputFile) as f:
             for line in f:
                 if line.startswith('ATOM') or line.startswith('HETATM'):
@@ -163,17 +162,17 @@ http://jmol.sourceforge.net or via your distribution's package manager.
         numAtoms = len(self.trueCoordinates)
         self.trueMatrix = np.matrix( [ [ np.linalg.norm(coords1-coords2)**2 for coords1 in self.trueCoordinates ] for coords2 in self.trueCoordinates] )
         self.trueCoordinates = np.matrix(self.trueCoordinates)
-        self.drucken("Number of atoms: " + str(numAtoms))
-        self.drucken("Load time:       " + str(time.time()-t0) + " sec")
+        self.drucken(f"Number of atoms: {numAtoms}")
+        self.drucken(f"Load time:       {str(time.time() - t0)} sec")
         self.drucken("")
 
     def readXYZ(self):
         self.drucken(" Loading XYZ File ".center(80,"="))
-        self.drucken("Input file:      " + self.inputFile)
+        self.drucken(f"Input file:      {self.inputFile}")
         t0 = time.time()
         self.trueCoordinates = []
         self.atomType = []
-        lineNumber = 1        
+        lineNumber = 1
         with open(self.inputFile) as f:
             for line in f:
                 if lineNumber > 2:# line.startswith('ATOM') or line.startswith('HETATM'):
@@ -185,8 +184,8 @@ http://jmol.sourceforge.net or via your distribution's package manager.
         numAtoms = len(self.trueCoordinates)
         self.trueMatrix = np.matrix( [ [ np.linalg.norm(coords1-coords2)**2 for coords1 in self.trueCoordinates ] for coords2 in self.trueCoordinates] )
         self.trueCoordinates = np.matrix(self.trueCoordinates)
-        self.drucken("Number of atoms: " + str(numAtoms))
-        self.drucken("Load time:       " + str(time.time()-t0) + " sec")
+        self.drucken(f"Number of atoms: {numAtoms}")
+        self.drucken(f"Load time:       {str(time.time() - t0)} sec")
         self.drucken("")
 
 #    def readXYZ2(self):
@@ -233,12 +232,18 @@ http://jmol.sourceforge.net or via your distribution's package manager.
             noisyMatrix = self.trueMatrix +  np.matrix(np.random.normal(0,float(noiseLevel)/3,tuple(theShape)))
         else:
             noisyMatrix = self.trueMatrix
-        self.dataMatrix = np.multiply( noisyMatrix, (noisyMatrix<=maxLength**2) ) + self.NOT_DATA * (noisyMatrix>maxLength**2)        
+        self.dataMatrix = np.multiply( noisyMatrix, (noisyMatrix<=maxLength**2) ) + self.NOT_DATA * (noisyMatrix>maxLength**2)
         nonzeroDistances = self.dataMatrix.size - self.dataMatrix.shape[0]
         numKnownDistances = np.sum( self.dataMatrix !=  self.NOT_DATA ) - self.dataMatrix.shape[0]
-        self.drucken("Maximum known bond length:                           " + str(maxLength))
-        self.drucken("Number of known non-zero inter-atomic distances:     " + str(numKnownDistances) +  ' of ' + str(nonzeroDistances))
-        self.drucken("Percentage of known non-zero inter-atomic distances: " + str(float(numKnownDistances) / nonzeroDistances * 100) + ' %')
+        self.drucken(
+            f"Maximum known bond length:                           {str(maxLength)}"
+        )
+        self.drucken(
+            f"Number of known non-zero inter-atomic distances:     {str(numKnownDistances)} of {str(nonzeroDistances)}"
+        )
+        self.drucken(
+            f"Percentage of known non-zero inter-atomic distances: {str(float(numKnownDistances) / nonzeroDistances * 100)} %"
+        )
         self.drucken("")
 
     # This function all inter-atom distances within amino acids, from the PDB file. This is resonable since their
@@ -292,8 +297,12 @@ http://jmol.sourceforge.net or via your distribution's package manager.
 
         nonzeroDistances = self.dataMatrix.size - self.dataMatrix.shape[0]
         numKnownDistances = np.sum( self.dataMatrix !=  self.NOT_DATA ) - self.dataMatrix.shape[0]
-        self.drucken("Number of known non-zero inter-atomic distances:     " + str(numKnownDistances) +  ' of ' + str(nonzeroDistances))
-        self.drucken("Percentage of known non-zero inter-atomic distances: " + str(float(numKnownDistances) / nonzeroDistances * 100) + ' %')
+        self.drucken(
+            f"Number of known non-zero inter-atomic distances:     {str(numKnownDistances)} of {str(nonzeroDistances)}"
+        )
+        self.drucken(
+            f"Percentage of known non-zero inter-atomic distances: {str(float(numKnownDistances) / nonzeroDistances * 100)} %"
+        )
 
         #print self.dataMatrix[0:11,0:11]
         #print seqResCount
@@ -304,7 +313,15 @@ http://jmol.sourceforge.net or via your distribution's package manager.
     # Input:  desiredPercentage = the desire percentage of entries to known in the partial EDM
     # Output: 
     def addPercentOfDist(self, desiredPercentage=10):
-        trueList = sorted([self.trueMatrix[i,j] for i,j in [x for x in itertools.permutations(range(self.trueMatrix.shape[0]),2)] if i<j])
+        trueList = sorted(
+            [
+                self.trueMatrix[i, j]
+                for i, j in list(
+                    itertools.permutations(range(self.trueMatrix.shape[0]), 2)
+                )
+                if i < j
+            ]
+        )
         maxBondIndex = int(len(trueList)*desiredPercentage/100)-1
         maxBondLength = np.sqrt(trueList[maxBondIndex])
         self.simulateNMR(maxBondLength, noiseLevel=0)
@@ -316,11 +333,15 @@ http://jmol.sourceforge.net or via your distribution's package manager.
         vDWAtomType = vDW['atomType'].tolist()
         xyzVDWRadii=[vDWRadii[vDWAtomType.index(atomType)] for atomType in self.atomType]
         radiiSq=np.matrix([[(r1+r2)**2 *  threshold**2 for r1 in xyzVDWRadii] for r2 in xyzVDWRadii])
-        self.dataMatrix = np.multiply(self.trueMatrix,self.trueMatrix<=radiiSq) + self.NOT_DATA * (self.trueMatrix>radiiSq)    
+        self.dataMatrix = np.multiply(self.trueMatrix,self.trueMatrix<=radiiSq) + self.NOT_DATA * (self.trueMatrix>radiiSq)
         nonzeroDistances = self.dataMatrix.size - self.dataMatrix.shape[0]
         numKnownDistances = np.sum( self.dataMatrix !=  self.NOT_DATA ) - self.dataMatrix.shape[0]
-        self.drucken("Number of known non-zero inter-atomic distances:     " + str(numKnownDistances) +  ' of ' + str(nonzeroDistances))
-        self.drucken("Percentage of known non-zero inter-atomic distances: " + str(float(numKnownDistances) / nonzeroDistances * 100) + ' %')
+        self.drucken(
+            f"Number of known non-zero inter-atomic distances:     {str(numKnownDistances)} of {str(nonzeroDistances)}"
+        )
+        self.drucken(
+            f"Percentage of known non-zero inter-atomic distances: {str(float(numKnownDistances) / nonzeroDistances * 100)} %"
+        )
         self.drucken("")        #print self.atomType
 
     # This function solves the loaded problem.
@@ -339,7 +360,7 @@ http://jmol.sourceforge.net or via your distribution's package manager.
         dontShow = set(dontShow)
         memberVars = list(set(memberVars)-dontShow)
         for memberVar in memberVars:
-           self.drucken((memberVar + ":").ljust(30," ") + str(vars(self)[memberVar]))
+            self.drucken(f"{memberVar}:".ljust(30, " ") + str(vars(self)[memberVar]))
         self.drucken("")
 
         # Initiailize Variables (to take advantage of Cython we need to make typed copies)
@@ -357,7 +378,7 @@ http://jmol.sourceforge.net or via your distribution's package manager.
         MAX_ITERATIONS = self.MAX_ITERATIONS
         P2_RANK = self.P2_RANK
 
-        x   = x0 
+        x   = x0
         P1x = P1(x0, dataMatrix, P1_EPS, NOT_DATA)
         P2R1x = np.empty(x0.shape)
         Tx    = np.empty(x0.shape)
@@ -390,14 +411,13 @@ http://jmol.sourceforge.net or via your distribution's package manager.
                 self.drucken( " " + str(iter).center(10, " ") + "{0:15e}".format(xChange[iter-1]) +  "{0:15e}".format(gap[iter-1]) +   "{0:15e}".format(relGap[iter-1]) + "{0:15e}".format(np.linalg.norm(P1x-trueMatrix,'fro')))
 
             # How should the projection onto C_2 be performed?
-            if typePC2 == 'default' or typePC2 == '':
+            if typePC2 in ['default', '']:
                 P2R1x = P2(2*P1x-x, dataMatrixLength,  P2_RANK, houseHolderMatrix)
             elif typePC2 == 'lazyUpdate':
                 #P2R1x = P2R1x
                 if (iter<10) or np.mod(iter,typePC2freq) == 0:
                    P2R1x = P2(2*P1x-x, dataMatrixLength,  P2_RANK, houseHolderMatrix)
             elif typePC2 == 'lazyEigh':
-                pass
                 if (iter<10) or np.mod(iter,typePC2freq) == 0:
                    P2R1x, U3 = P2withU(2*P1x-x, dataMatrixLength,  P2_RANK, houseHolderMatrix)
                 else:
@@ -406,7 +426,7 @@ http://jmol.sourceforge.net or via your distribution's package manager.
                 if (iter<1000) or xChange[iter-1]<100:
                    P2R1x = P2(2*P1x-x, dataMatrixLength,  P2_RANK, houseHolderMatrix)
             else:
-                raise Exception("typePC2 " + typePC2 + " not found.")
+                raise Exception(f"typePC2 {typePC2} not found.")
 
 
             # Should Douglas--Rachford, or RAAR be used?
@@ -483,10 +503,7 @@ http://jmol.sourceforge.net or via your distribution's package manager.
            d, coords, tform  = procrustes.procrustes(self.trueCoordinates, coords,scaling=False)
            d = np.linalg.norm(self.trueCoordinates-coords,'fro')
 
-        if procrustesError:
-          return [coords, d]
-        else:
-          return coords
+        return [coords, d] if procrustesError else coords
 
     # This function saves a *.pdb file containing the reconstructed molecule.
     # Input:  self.inputFile
@@ -514,8 +531,8 @@ http://jmol.sourceforge.net or via your distribution's package manager.
                     outputText += line
         with open(self.outputFile, 'w') as f:
             f.write(outputText)
-        self.drucken( "Output file:     " + str(self.outputFile))
-        self.drucken("Save time:       " + str(time.time()-t0) + " sec")
+        self.drucken(f"Output file:     {str(self.outputFile)}")
+        self.drucken(f"Save time:       {str(time.time() - t0)} sec")
         self.drucken("")
 
 
@@ -546,19 +563,26 @@ http://jmol.sourceforge.net or via your distribution's package manager.
                 lineNumber += 1
         with open(self.outputFile, 'w') as f:
             f.write(outputText)
-        self.drucken("Output file:     " + str(self.outputFile))
-        self.drucken("Save time:       " + str(time.time()-t0) + " sec")
+        self.drucken(f"Output file:     {str(self.outputFile)}")
+        self.drucken(f"Save time:       {str(time.time() - t0)} sec")
         self.drucken("")
 
     def saveJPG(self):
-      self.drucken(" Saving JPG File ".center(80,"="))
-      jmolCmd = ["jmol", "-n", self.outputFile, "-w", "JPG:" + self.imageFile, "--exit"]
-      try:
-          self.drucken(sp.check_output(jmolCmd))
-      except sp.CalledProcessError as e:
-          self.drucken(e.output.decode())
-          self.drucken("Error while calling Jmol: " + e)
-          self.drucken("")
+        self.drucken(" Saving JPG File ".center(80,"="))
+        jmolCmd = [
+            "jmol",
+            "-n",
+            self.outputFile,
+            "-w",
+            f"JPG:{self.imageFile}",
+            "--exit",
+        ]
+        try:
+            self.drucken(sp.check_output(jmolCmd))
+        except sp.CalledProcessError as e:
+            self.drucken(e.output.decode())
+            self.drucken(f"Error while calling Jmol: {e}")
+            self.drucken("")
     
     def show(self):
     	sp.call(["jmol", self.outputFile])
@@ -577,15 +601,14 @@ def P1(x, dataMatrix, P1_EPS, NOT_DATA):
     xx = np.empty([x.shape[0], x.shape[1]])
     for j in range(x.shape[1]):
         for i in range(x.shape[0]):
-            if dataMatrix[i, j] != NOT_DATA:
-                if i == j:
-                    xx[i, j] = 0
-                elif x[i, j] > dataMatrix[i, j] + P1_EPS:
-                    xx[i, j] = dataMatrix[i, j] + P1_EPS
-                elif x[i, j] < max(dataMatrix[i, j] - P1_EPS, 0):
-                    xx[i, j] = max( dataMatrix[i, j] - P1_EPS,  0)
-            else:
+            if dataMatrix[i, j] == NOT_DATA:
                 xx[i, j] = max(x[i, j], 0)
+            elif i == j:
+                xx[i, j] = 0
+            elif x[i, j] > dataMatrix[i, j] + P1_EPS:
+                xx[i, j] = dataMatrix[i, j] + P1_EPS
+            elif x[i, j] < max(dataMatrix[i, j] - P1_EPS, 0):
+                xx[i, j] = max( dataMatrix[i, j] - P1_EPS,  0)
     return xx
 
 # This function performs the projection onto "C_2" which is the EDM constraint.
@@ -664,20 +687,22 @@ def runExperiment():
     proteins = ['1PTQ','1PHT','1HOE','1POA','1LFB','1AX8']
     suffix   = ['','_lazyUpdate','_lazyEigh','_RAAR']
 #    parameterFiles = ['1PTQ_parameters','1PTQ_parameters_lazyUpdate','1PTQ_parameters_lazyEigh','1PTQ_parameters_RAAR']
-    parameterFiles = [pro + '_parameters' + suf for (pro,suf) in zip(proteins,suffix)]
+    parameterFiles = [
+        f'{pro}_parameters{suf}' for (pro, suf) in zip(proteins, suffix)
+    ]
     replications = 5
     startingSeed = 2
     for pF in parameterFiles:
-      stats = []
-      seed = startingSeed
-      for rep in range(replications):
-        problem = DRprotein(pF,seed)
-        problem.solve()
-        theseStats = problem.printStats()
-        stats.append(theseStats)
-        problem.savePDB()
-        del problem        
-        seed += 1
+        stats = []
+        seed = startingSeed
+        for _ in range(replications):
+            problem = DRprotein(pF,seed)
+            problem.solve()
+            theseStats = problem.printStats()
+            stats.append(theseStats)
+            problem.savePDB()
+            del problem
+            seed += 1
         #[self.iter,self.solveTime,self.xChange[self.iter-1],self.gap[self.iter-1],procrustesError,EDMError]       
 
 

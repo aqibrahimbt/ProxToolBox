@@ -47,13 +47,7 @@ def Phase_graphics(config, output):
     iter = output['iter']
     change = output['change']
 
-    if 'time' in output:
-        time = output['time']
-    else:
-        time=999
-
-
-
+    time = output['time'] if 'time' in output else 999
     f, ((ax1, ax2), (ax3, ax4)) = subplots(2, 2)
 
     im=ax1.imshow(np.abs(u),cmap='gray')

@@ -7,7 +7,7 @@ Created on Sun May  7 12:18:52 2017
 import numpy as np
 __all__=["bregProj"]
 
-def J(x,p,norm=np.linalg.norm):    
+def J(x,p,norm=np.linalg.norm):
     """
     Duality function 
     
@@ -17,10 +17,7 @@ def J(x,p,norm=np.linalg.norm):
     x : array_like - The point which dual is searched
     p : value - The .....
     """
-    if norm(x,ord=2)>0:
-        return x*norm(x,ord=2)**(p-2)
-    else:
-        return x
+    return x*norm(x,ord=2)**(p-2) if norm(x,ord=2)>0 else x
 
 def quasi_newton(args):
     """

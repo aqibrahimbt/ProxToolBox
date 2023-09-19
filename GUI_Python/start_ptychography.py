@@ -16,15 +16,11 @@ with open('data_in.json') as data_file:
 config['scan_stepsize'] = float(config['scan_stepsize'])
 if config['noise'] == 'none':
 	config['noise'] = None
-if config['switch_probemask'] == 'true':
-	config['switch_probemask'] = True
-else:
-	config['switch_probemask'] = False
+config['switch_probemask'] = config['switch_probemask'] == 'true'
 config['probe_mask_gamma'] = float(config['probe_mask_gamma'])
-if config['switch_object_support_constraint'] == 'true':
-	config['switch_object_support_constraint'] = True
-else:
-	config['switch_object_support_constraint'] = False
+config['switch_object_support_constraint'] = (
+	config['switch_object_support_constraint'] == 'true'
+)
 if config['warmup'] == 'true':
 	config['warmup'] = True
 	if config['warmup_alg'] == 'PALM':
@@ -34,14 +30,8 @@ else:
 if config['algorithm'] == 'PALM':
 	config['algorithm'] = PALM
 config['tol'] = float(config['tol'])
-if config['ignore_error'] == 'true':
-	config['ignore_error'] = True
-else:
-	config['ignore_error'] = False
-if config['blocking_switch'] == 'true':
-	config['blocking_switch'] = True
-else:
-	config['blocking_switch'] = False
+config['ignore_error'] = config['ignore_error'] == 'true'
+config['blocking_switch'] = config['blocking_switch'] == 'true'
 if config['bs_mask'] == 'none':
 	config['bs_mask'] = None
 if config['fmask'] == 'none':

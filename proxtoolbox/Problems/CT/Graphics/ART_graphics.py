@@ -28,13 +28,7 @@ def ART_graphics(config, output):
     iter = output['iter']
     change = output['change']
 
-    if 'time' in output:
-        time = output['time']
-    else:
-        time=999
-
-
-
+    time = output['time'] if 'time' in output else 999
     f, ((ax1, ax2), (ax3, ax4)) = subplots(2, 2)
 
     im=ax1.imshow(u,cmap='gray')
@@ -49,7 +43,13 @@ def ART_graphics(config, output):
     ax3.set_yscale('log')
     ax3.set_xlabel('iteration' + ', time = ' + str(time) + 's')
     ax3.set_ylabel('log of iterate difference')
-    ax3.set_title('Algorithm: '+ algorithm + ', ' + r'$\beta =$' + str(beta0) + ' to ' + str(beta_max))
+    ax3.set_title(
+        f'Algorithm: {algorithm}, '
+        + r'$\beta =$'
+        + str(beta0)
+        + ' to '
+        + str(beta_max)
+    )
 
     if 'diagnostic' in config:
         gap = output['gap']
@@ -57,11 +57,17 @@ def ART_graphics(config, output):
         #ax4.set_yscale('log')
         ax4.set_xlabel('iteration' + ', time = ' + str(time) + 's')
         ax4.set_ylabel('log of gap distance')
-        ax4.set_title('Algorithm: '+ algorithm + ', ' + r'$\beta =$' + str(beta0) + ' to ' + str(beta_max))
-        
-    
+        ax4.set_title(
+            f'Algorithm: {algorithm}, '
+            + r'$\beta =$'
+            + str(beta0)
+            + ' to '
+            + str(beta_max)
+        )
+                
+
     show()
-    
+
     '''    
     im=ax3.imshow(np.abs(u2),cmap='gray')
     f.colorbar(im, ax=ax3)

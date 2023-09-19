@@ -185,8 +185,7 @@ class P_parallel(ProxOperator):
         self.p = config['Nz']
         self.K = config['product_space_dimension']
         self.proj = []
-        for p in config['projectors']:
-            self.proj.append(p(config))
+        self.proj.extend(p(config) for p in config['projectors'])
         
 #        for p in config['projectors']:
 #            self.proj.append(globals()[p](config))
@@ -407,10 +406,7 @@ class Approx_PM_Gaussian(ProxOperator):
         U0_sq = U0 * conj(U0)
         tmp = U0_sq - b
         h=sum(sum(tmp * conj(tmp)))
-        if h>=epsilon+TOL2:
-            return ifft2(U0)
-        else:
-            return u
+        return ifft2(U0) if h>=epsilon+TOL2 else u
 
 #                      Approx_PM_Poisson.m
 #             written on Feb. 18, 2011 by 
@@ -454,17 +450,17 @@ class Approx_PM_Poisson(ProxOperator):
 
         U = fft2(u)
         U_sq = U * conj(U)
-        tmp = U_sq/b; tmp[Ib] = 1
+        tmp = U_sq/b
+        tmp[Ib] = 1
         U_sq[Ib]=0
         IU = tmp==0
         tmp[IU]=1
         tmp=log(tmp)
         hU = sum(sum(U_sq * tmp + b - U_sq))
-        if hU>=epsilon+TOL2:
-            U0 = magproj(U,M)
-            return ifft2(U0)
-        else:
+        if hU < epsilon + TOL2:
             return u
+        U0 = magproj(U,M)
+        return ifft2(U0)
 
 class P_S(ProxOperator):
 
@@ -674,19 +670,19 @@ from numpy import real, imag
 
 class Q_Heau(ProxOperator):
 
-    def work(x,y,z):
+    def work(self, y, z):
 
-        xsi = real((y-z).T @ (x-y))+imag((y-z).T @ (x-y))
-        eta = (x-y).T @ (x-y)
+        xsi = real((y-z).T @ (self - y)) + imag((y-z).T @ (self - y))
+        eta = (self - y).T @ (self - y)
         nu =  (y-z).T  @ (y-z)
         rho = eta*nu-xsi**2
 
-        if((rho<=0) and (xsi>=0)):
+        if ((rho<=0) and (xsi>=0)):
             return z
-        elif((rho>0) and (xsi*nu>=rho)):
-            return x+(1+xsi/nu)*(z-y)
-        elif((rho>0) and (xsi*nu<rho)):
-            return y+(nu/rho)*(xsi*(x-y)+nu*(z-y))
+        elif ((rho>0) and (xsi*nu>=rho)):
+            return self + (1+xsi/nu)*(z-y)
+        elif rho > 0:
+            return y + nu/rho * (xsi * (self - y) + nu*(z-y))
 
 
 #                      P_Amod.m
@@ -769,18 +765,23 @@ class Approx_P_FreFra_Poisson(ProxOperator):
     def work(self,f):
      
         if self.use_farfield_formula:
-            if  self.fresnel_nr>0:       
-                fhat = -1j*self.fresnel_nr/(self.Nx**2*2*pi) * ifftshift(fft2(fftshift(f-self.illumination)))+ ifftshift(self.FT_conv_kernel)
-            else:
-                fhat = (-1j/self.Nx**2)*ifftshift(fft2(fftshift(f)))
+            fhat = (
+                -1j
+                * self.fresnel_nr
+                / (self.Nx**2 * 2 * pi)
+                * ifftshift(fft2(fftshift(f - self.illumination)))
+                + ifftshift(self.FT_conv_kernel)
+                if self.fresnel_nr > 0
+                else (-1j / self.Nx**2) * ifftshift(fft2(fftshift(f)))
+            )
+        elif hasattr(self,'beam'):
+            fhat = ifft2(self.FT_conv_kernel*fft2(f*self.beam))/self.magn
         else:
-            if hasattr(self,'beam'):
-               fhat = ifft2(self.FT_conv_kernel*fft2(f*self.beam))/self.magn
-            else:
-               fhat = ifft2(self.FT_conv_kernel*fft2(f))/self.magn
+            fhat = ifft2(self.FT_conv_kernel*fft2(f))/self.magn
 
         fhat_sq = fhat.real**2+fhat.imag**2
-        tmp = fhat_sq/self.data_sq; tmp[self.data_zeros]=1;
+        tmp = fhat_sq/self.data_sq
+        tmp[self.data_zeros]=1;
         fhat_sq[self.data_zeros]=0
         Ifhat= tmp==0
         tmp[Ifhat]=1
@@ -789,17 +790,20 @@ class Approx_P_FreFra_Poisson(ProxOperator):
         if hfhat>=self.data_ball+self.TOL2:
             p_Mhat = magproj(fhat,self.data)
             if self.use_farfield_formula:
-                if  self.fresnel_nr>0:   
-                    p_M=1j/self.fresnel_nr*(self.Nx**2*2*pi) *ifftshift(ifft2(fftshift(p_Mhat)))
-                else:
-                    p_M=1j*(self.Nx**2) *ifftshift(ifft2(fftshift(p_Mhat)))
+                p_M = (
+                    1j
+                    / self.fresnel_nr
+                    * (self.Nx**2 * 2 * pi)
+                    * ifftshift(ifft2(fftshift(p_Mhat)))
+                    if self.fresnel_nr > 0
+                    else 1j * (self.Nx**2) * ifftshift(ifft2(fftshift(p_Mhat)))
+                )
+            elif hasattr(self,'beam'):
+                p_M=ifft2(fft2(p_Mhat*self.magn)/self.FT_conv_kernel)/self.beam
             else:
-                if hasattr(self,'beam'):
-                    p_M=ifft2(fft2(p_Mhat*self.magn)/self.FT_conv_kernel)/self.beam
-                else:
-                    p_M=ifft2(fft2(p_Mhat*self.magn)/self.FT_conv_kernel)
+                p_M=ifft2(fft2(p_Mhat*self.magn)/self.FT_conv_kernel)
         else:
             p_M = f
-       
+
         return(p_M)
 

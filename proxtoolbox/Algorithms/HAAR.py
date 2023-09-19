@@ -67,9 +67,12 @@ class HAAR(Algorithm):
                 dim: int
                     Size of the product space
         """
-        self.prox1 = config['proxoperators'][0](config); self.prox2 = config['proxoperators'][1](config)
+        self.prox1 = config['proxoperators'][0](config)
+        self.prox2 = config['proxoperators'][1](config)
         self.norm_data = config['norm_data']
-        self.Nx = config['Nx']; self.Ny = config['Ny']; self.Nz = config['Nz']
+        self.Nx = config['Nx']
+        self.Ny = config['Ny']
+        self.Nz = config['Nz']
         self.product_space_dimension = config['product_space_dimension']
         self.iter = 0
 
@@ -86,11 +89,7 @@ class HAAR(Algorithm):
         self.T_config['anim']=0
         self.T = getattr(Algorithms, self.T)(self.T_config)
 
-        if 'diagnostic' in config:
-            self.diagnostic = True
-        else:
-            self.diagnostic = False
-
+        self.diagnostic = 'diagnostic' in config
         self.y0 = config['u_0']
         self.Q_Heau = getattr(ProxOperators, "Q_Heau")
         self.mu = config['beta_0']
@@ -99,7 +98,8 @@ class HAAR(Algorithm):
         """
         Runs the algorithm for the specified input data
         """
-        prox1 = self.prox1; prox2 = self.prox2;
+        prox1 = self.prox1
+        prox2 = self.prox2;
         norm_data = self.norm_data
 
         y0 = self.y0
@@ -140,7 +140,7 @@ class HAAR(Algorithm):
 
         while iter < maxiter and change[iter] >= tol:
 
-            iter = iter+1
+            iter += 1
             self.iter=iter
 
             # next iterate
@@ -184,10 +184,12 @@ class HAAR(Algorithm):
                 # compute the normalized change in successive iterates:
                 tmp = prox2.work(y_new)
                 tmp2 = prox1.work(tmp)
-            
+
             # compute the normalized change in successive iterates: 
             # change(iter) = sum(sum((feval('P_M',M,u)-tmp).^2))/norm_data;
-            tmp_change=0; tmp_gap=0; tmp_shadow=0;
+            tmp_change=0
+            tmp_gap=0
+            tmp_shadow=0;
 
             if dim_number <= 2:
                 tmp_change= (norm(y-y_new, 'fro')/norm_data)**2
@@ -241,7 +243,7 @@ class HAAR(Algorithm):
                 # (see Bauschke-Combettes-Luke, J. Approx. Theory, 2004)
                 shadow=tmp
 
-         
+
         ##### POSTPROCESSING
         u = tmp2
         tmp1 = self.prox1.work(u)

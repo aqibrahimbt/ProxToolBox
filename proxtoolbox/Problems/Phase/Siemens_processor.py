@@ -43,7 +43,7 @@ def Siemens_processor(config):
     config['Nx'] = dim[1]
     config['Ny'] = dim[0]
 
-    if config['object'] == 'real' or config['object'] == 'nonnegative':
+    if config['object'] in ['real', 'nonnegative']:
         M=abs(fft2(S))
         # config['data_ball']=config['Nx']*config['Ny']*data_ball
         config['rt_data']=M
@@ -59,7 +59,7 @@ def Siemens_processor(config):
         # Stmp((m/2-m/4):(m/2+m/4),(n/2-n/4):(n/2+n/4))=S((m/2-m/4):(m/2+m/4),(n/2-n/4):(n/2+n/4))
         # S=Stmp
         config['support_idx'] = np.nonzero(S)
-        
+
         # use the abs_illumination field to represent the
         # support constraint.
         config['amplitude'] = config['norm_rt_data']*S/(norm(S,'fro'))
@@ -109,7 +109,7 @@ def Siemens_processor(config):
         config['support_idx'] = np.nonzero(W)    
         config['supp_phase'] = S
         config['illumination_phase'] = S    
-    
+
     # initial guess
     config['u_0'] = ifft2(M*np.exp(2*np.pi*1j*0.5*np.ones((dim[0],dim[1]))))# rand(dim[0],dim[1])))
     # config['u_0 = ifft2(M.*exp(2*pi*1i*Gaussian(N,N/2,[N/2+1,N/2+1]))).*S

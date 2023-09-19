@@ -15,11 +15,10 @@ def PoissonRan(xm):
       oldm = xm;
       g = exp(-xm);
 
-    em = -1;
     t = 1;
 
-    em = em+1;
-    t = t*rand(1);
+    em = -1 + 1
+    t *= rand(1);
     while t>g :
       em = em+1;
       t = t*rand(1);
@@ -37,7 +36,7 @@ def PoissonRan(xm):
     while em < 0:
       y = tan(pi*rand(1));
       em = sq*y+xm;
-  
+
     em = floor(em);
     t = 0.9*(1+y*y)*exp(em*alxm-gammaln(em+1)-g);
 
@@ -51,5 +50,5 @@ def PoissonRan(xm):
 
       em = floor(em);
       t = 0.9*(1+y*y)*exp(em*alxm-gammaln(em+1)-g);
-   
+
   return em;

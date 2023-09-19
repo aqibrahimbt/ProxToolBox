@@ -40,7 +40,9 @@ class SimpleAlgorithm:
         self.prox1 = config['proxoperators'][0](config)
         self.prox2 = config['proxoperators'][1](config)
         self.norm_data = config['norm_data']
-        self.Nx = config['Nx']; self.Ny = config['Ny']; self.Nz = config['Nz']
+        self.Nx = config['Nx']
+        self.Ny = config['Ny']
+        self.Nz = config['Nz']
         self.product_space_dimension = config['product_space_dimension']
         self.iter = 0
         self.config = config
@@ -50,10 +52,7 @@ class SimpleAlgorithm:
             self.truth_dim = config['truth_dim']
             self.norm_truth = config['norm_truth']
 
-        if 'diagnostic' in config:
-            self.diagnostic = True
-        else:
-            self.diagnostic = False
+        self.diagnostic = 'diagnostic' in config
 
 
     def run(self, u, tol, maxiter):
